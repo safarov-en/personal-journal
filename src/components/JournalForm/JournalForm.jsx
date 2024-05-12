@@ -1,18 +1,20 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useContext, useEffect, useReducer, useRef } from 'react';
 import styles from './JournalForm.module.css';
 import Button from '../Button/Button';
 import { INITIAL_STATE, formReducer } from './JournalForm.state';
 import cn from 'classnames'
 import Input from '../Input/Input';
+import { UserContext } from '../../context/user.context';
 
 function JournalForm({ onSubmit }) {
     const [formState, dispatchForm] = useReducer(formReducer, INITIAL_STATE);
     const { isValid, isFormReadyToSubmit, values } = formState
+    const { userId } = useContext(UserContext)
     const titleRef = useRef()
     const dateRef = useRef()
     const postRef = useRef()
     const focusError = (isValid) => {
-        switch(true) {
+        switch (true) {
             case !isValid.title:
                 titleRef.current.focus()
                 break
@@ -29,7 +31,7 @@ function JournalForm({ onSubmit }) {
         if (!isValid.date || !isValid.post || !isValid.tile) {
             focusError(isValid)
             timerId = setTimeout(() => {
-                dispatchForm({ type: "RESET_VALIDITY"});
+                dispatchForm({ type: "RESET_VALIDITY" });
             }, 2000)
         }
         return () => {
@@ -42,8 +44,11 @@ function JournalForm({ onSubmit }) {
             dispatchForm({ type: 'CLEAR' })
         }
     }, [isFormReadyToSubmit, values, onSubmit])
+    useEffect(() => {
+        dispatchForm({ type: 'SET_VALUE', payload: { userId } })
+    }, [userId])
     const onChange = (e) => {
-        dispatchForm({ type: 'SET_VALUE', payload: {[e.target.name]: e.target.value} })
+        dispatchForm({ type: 'SET_VALUE', payload: { [e.target.name]: e.target.value } })
     }
     const addJournalItem = (e) => {
         e.preventDefault();
