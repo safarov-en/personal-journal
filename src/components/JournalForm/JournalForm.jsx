@@ -6,7 +6,7 @@ import cn from 'classnames'
 import Input from '../Input/Input';
 import { UserContext } from '../../context/user.context';
 
-function JournalForm({ onSubmit, data }) {
+function JournalForm({ onSubmit, data, onDelete }) {
     const [formState, dispatchForm] = useReducer(formReducer, INITIAL_STATE);
     const { isValid, isFormReadyToSubmit, values } = formState
     const { userId } = useContext(UserContext)
@@ -49,6 +49,10 @@ function JournalForm({ onSubmit, data }) {
         dispatchForm({ type: 'SET_VALUE', payload: { userId } })
     }, [userId])
     useEffect(() => {
+        if (!data) {
+            dispatchForm({type: 'CLEAR'})
+            dispatchForm({type: 'SET_VALUE', payload: {userId}})
+        }
         dispatchForm({ type: 'SET_VALUE', payload: { ...data } })
     }, [data])
     const onChange = (e) => {
@@ -58,10 +62,18 @@ function JournalForm({ onSubmit, data }) {
         e.preventDefault();
         dispatchForm({ type: 'SUBMIT' })
     }
+    const deleteJournalItem = () => {
+        onDelete(data.id)
+        dispatchForm({ type: 'CLEAR' })
+        dispatchForm({ type: 'SET_VALUE', payload: { userId } })
+    }
     return (
         <form className={styles['journal-form']} onSubmit={addJournalItem}>
-            <div>
+            <div className={styles['form-row']}>
                 <Input type="text" ref={titleRef} isValid={!isValid.title} onChange={onChange} value={values.title} name="title" appearence="title" />
+                {data && data.id && <button className={styles['delete']} type="button" onClick={deleteJournalItem}>
+                    <img src="/archive.svg" />
+                </button>}
             </div>
             <div className={styles['form-row']}>
                 <label htmlFor="date" className={styles['form-label']}>
